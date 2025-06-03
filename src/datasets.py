@@ -274,7 +274,7 @@ class DatasetsWidget(QWidget):
                 gridline-color: rgba(41, 128, 185, 0.3);
             }
             QTableWidget::item {
-                padding: 5px;
+                padding: 1px;
                 border-bottom: 1px solid rgba(41, 128, 185, 0.3);
             }
             QTableWidget::item:selected {

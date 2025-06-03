@@ -165,14 +165,53 @@ class GISMapWidget(QWidget):
                 .male-count { color: #06b6d4; }
                 .female-count { color: #ec4899; }
                 .total-count { color: #f59e0b; }
+                /* Location search bar styles */
+                .location-search {
+                    position: absolute;
+                    top: 20px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    z-index: 1000;
+                    width: 300px;
+                    background-color: rgba(25, 52, 95, 0.7);
+                    border-radius: 20px;
+                    backdrop-filter: blur(10px);
+                    border: 1px solid rgba(52, 152, 219, 0.5);
+                    padding: 8px 15px;
+                    display: flex;
+                    align-items: center;
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+                }
+                .location-search input {
+                    width: 100%;
+                    background: transparent;
+                    border: none;
+                    color: white;
+                    font-size: 14px;
+                    outline: none;
+                    padding: 5px;
+                }
+                .location-search input::placeholder {
+                    color: rgba(255, 255, 255, 0.7);
+                }
+                .location-search .search-icon {
+                    color: white;
+                    margin-right: 8px;
+                }
             </style>
         </head>
         <body>
             <div id="map"></div>
+            <div class="location-search">
+                <i class="fa fa-search search-icon"></i>
+                <input type="text" id="location-search" placeholder="Search location...">
+            </div>
             
             <!-- Leaflet JavaScript -->
             <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
             <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+            <!-- Add Font Awesome for search icon -->
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
             
             <script>
                 // Initialize map centered on Negros Island, Philippines
@@ -377,6 +416,52 @@ class GISMapWidget(QWidget):
                 window.addCrabMarkers = addCrabMarkers;
                 window.filterMarkers = filterMarkers;
                 window.updateAnalytics = updateAnalytics;
+
+                // Add location search functionality
+                const searchInput = document.getElementById('location-search');
+                let searchTimeout;
+
+                searchInput.addEventListener('input', function(e) {
+                    clearTimeout(searchTimeout);
+                    const query = e.target.value.trim();
+                    
+                    if (query.length < 3) return;
+                    
+                    searchTimeout = setTimeout(() => {
+                        // Use OpenStreetMap Nominatim API for geocoding
+                        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data && data.length > 0) {
+                                    const result = data[0];
+                                    const lat = parseFloat(result.lat);
+                                    const lon = parseFloat(result.lon);
+                                    
+                                    // Create a marker for the search result
+                                    if (window.searchMarker) {
+                                        map.removeLayer(window.searchMarker);
+                                    }
+                                    
+                                    window.searchMarker = L.marker([lat, lon]).addTo(map);
+                                    map.setView([lat, lon], 13);
+                                    
+                                    // Add popup with location details
+                                    window.searchMarker.bindPopup(`
+                                        <div class="custom-popup">
+                                            <div class="popup-title">${result.display_name}</div>
+                                            <div class="popup-content">
+                                                <div class="popup-stat">
+                                                    <span class="stat-label">Type:</span>
+                                                    <span class="stat-value">${result.type}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `).openPopup();
+                                }
+                            })
+                            .catch(error => console.error('Error searching location:', error));
+                    }, 500); // Debounce search for 500ms
+                });
             </script>
         </body>
         </html>
