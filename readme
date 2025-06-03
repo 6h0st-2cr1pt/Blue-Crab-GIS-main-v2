@@ -1,8 +1,8 @@
-# Blue Crab GIS
+Blue Crab GIS
 
 A Geographic Information System for Blue Crab population monitoring using PyQt5, OpenStreetMap, and Leaflet.js.
 
-## Features
+Features
 
 - Interactive GIS map with dark mode and population visualization
 - Data upload via CSV or manual entry
@@ -11,17 +11,15 @@ A Geographic Information System for Blue Crab population monitoring using PyQt5,
 - Customizable settings
 - Optimized for performance on low-spec laptops
 
-## Installation
+Installation
 
 1. Clone this repository
+
 2. Install dependencies:
-   \`\`\`
    pip install -r requirements.txt
-   \`\`\`
+
 3. Run the application:
-   \`\`\`
    python main.py
-   \`\`\`
 
 ## Project Structure
 
@@ -45,7 +43,7 @@ A Geographic Information System for Blue Crab population monitoring using PyQt5,
   - `map/` - Map-related files
 - `data/` - Data directory for SQLite database
 
-## Performance Optimization
+Performance Optimization
 
 The application implements several optimizations for low-spec laptops:
 
@@ -56,6 +54,6 @@ The application implements several optimizations for low-spec laptops:
 5. Vector tiles option for better performance
 6. Developer tools disabled in production
 
-## License
+License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
