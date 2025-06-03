@@ -23,27 +23,53 @@ A Geographic Information System for Blue Crab population monitoring using PyQt5,
    python main.py
    \`\`\`
 
-## Project Structure
+Blue Crab GIS Project Structure
+=============================
 
-- `main.py` - Application entry point
-- `src/` - Source code directory
-  - `splash_screen.py` - Splash screen implementation
-  - `main_window.py` - Main application window
-  - `sidebar.py` - Sidebar navigation
-  - `gis_map.py` - GIS map implementation
-  - `analytics.py` - Data analytics and visualization
-  - `datasets.py` - Dataset management
-  - `upload_data.py` - Data upload functionality
-  - `settings.py` - Application settings
-  - `about.py` - About information
-  - `utils/` - Utility modules
-    - `database.py` - Database management
-    - `notification.py` - Notification system
-    - `map_controls.py` - Map control widgets
-- `assets/` - Application assets
-  - `icons/` - Application icons
-  - `map/` - Map-related files
-- `data/` - Data directory for SQLite database
+Root Directory
+-------------
+├── LICENSE                     # MIT License file
+├── main.py                    # Main application entry point
+├── run_erd.py                 # ERD (Entity Relationship Diagram) runner
+├── requirements.txt           # Python package dependencies
+├── readme                     # Project documentation
+├── FOLDER_STRUCTURE.txt       # This file - project structure documentation
+
+├── .git/                      # Git version control directory
+│   └── ...                    # Git configuration files
+
+├── assets/                    # Static assets directory
+│   └── map/                   # Map-related assets
+│       └── gis_map.html       # Generated map HTML file
+
+├── data/                      # Data storage directory
+│   └── ...                    # Database and data files
+
+├── GeoJson/                   # Geographic data files
+│   └── map.geojson           # Map GeoJSON data
+
+└── src/                       # Source code directory
+    ├── __init__.py           # Python package marker
+    ├── gis_map.py            # GIS map implementation
+    ├── main_window.py        # Main application window
+    ├── sidebar.py            # Sidebar navigation
+    ├── about.py              # About page
+    ├── settings.py           # Application settings
+    ├── dashboard.py          # Dashboard implementation
+    ├── analytics.py          # Analytics implementation
+    ├── datasets.py           # Dataset management
+    ├── upload_data.py        # Data upload functionality
+    └── utils/                # Utility modules
+        ├── __init__.py       # Package marker
+        ├── database.py       # Database management
+        ├── map_controls.py   # Map control widgets
+        └── glass_controls.py # Glass-effect UI controls
+
+Notes:
+- The project follows a modular structure with clear separation of concerns
+- Source code is organized in the src/ directory with utility modules in src/utils/
+- Static assets and data are stored in separate directories
+- Configuration and documentation files are in the root directory 
 
 ## Performance Optimization
 
