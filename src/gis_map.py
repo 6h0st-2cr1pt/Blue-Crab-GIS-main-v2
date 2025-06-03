@@ -108,6 +108,11 @@ class GISMapWidget(QWidget):
     
     def create_map_html(self):
         """Create the HTML content for the map"""
+        # Read the GeoJSON file
+        geojson_path = os.path.join(os.path.dirname(__file__), '..', 'GeoJson', 'map.geojson')
+        with open(geojson_path, 'r', encoding='utf-8') as f:
+            geojson_data = json.load(f)
+        
         return """
         <!DOCTYPE html>
         <html>
@@ -188,6 +193,34 @@ class GISMapWidget(QWidget):
                     updateWhenIdle: true,  // Only update tiles when map is idle
                     updateWhenZooming: false,  // Don't update tiles during zoom
                     keepBuffer: 2  // Keep 2 zoom levels of tiles in buffer
+                }).addTo(map);
+                
+                // Add GeoJSON layer
+                var geojsonData = """ + json.dumps(geojson_data) + """;
+                var geojsonLayer = L.geoJSON(geojsonData, {
+                    style: {
+                        color: '#3498db',
+                        weight: 2,
+                        opacity: 0.8,
+                        fillOpacity: 0.1
+                    },
+                    onEachFeature: function(feature, layer) {
+                        if (feature.properties) {
+                            var popupContent = '<div class="custom-popup">';
+                            popupContent += '<div class="popup-title">' + (feature.properties.MUNICIPALI || 'Area') + '</div>';
+                            popupContent += '<div class="popup-content">';
+                            for (var prop in feature.properties) {
+                                if (prop !== 'MUNICIPALI') {
+                                    popupContent += '<div class="popup-stat">';
+                                    popupContent += '<span class="stat-label">' + prop + ':</span> ';
+                                    popupContent += '<span class="stat-value">' + feature.properties[prop] + '</span>';
+                                    popupContent += '</div>';
+                                }
+                            }
+                            popupContent += '</div></div>';
+                            layer.bindPopup(popupContent);
+                        }
+                    }
                 }).addTo(map);
                 
                 // Store markers for filtering
