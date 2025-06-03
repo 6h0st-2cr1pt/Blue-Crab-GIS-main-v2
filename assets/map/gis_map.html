@@ -1,0 +1,240 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Blue Crab GIS Map</title>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            
+            <!-- Leaflet CSS -->
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+            <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+            <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+            
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    background-color: #0a1428;
+                }
+                #map {
+                    height: 100vh;
+                    width: 100%;
+                }
+                .custom-popup {
+                    background-color: rgba(15, 32, 65, 0.95);
+                    color: #e0e0e0;
+                    border-radius: 8px;
+                    border: 1px solid rgba(41, 128, 185, 0.5);
+                }
+                .popup-title {
+                    color: #3498db;
+                    font-weight: bold;
+                    font-size: 14px;
+                    margin-bottom: 8px;
+                }
+                .popup-content {
+                    font-size: 12px;
+                    line-height: 1.4;
+                }
+                .popup-stat {
+                    margin: 3px 0;
+                }
+                .stat-label {
+                    color: #c0c0c0;
+                }
+                .stat-value {
+                    color: #e0e0e0;
+                    font-weight: bold;
+                }
+                .male-count { color: #06b6d4; }
+                .female-count { color: #ec4899; }
+                .total-count { color: #f59e0b; }
+            </style>
+        </head>
+        <body>
+            <div id="map"></div>
+            
+            <!-- Leaflet JavaScript -->
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+            <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+            
+            <script>
+                // Initialize map centered on Negros Island, Philippines
+                var map = L.map('map', {
+                    zoomControl: false,
+                    attributionControl: false,
+                    preferCanvas: true,  // Use Canvas renderer for better performance
+                    maxZoom: 19,
+                    minZoom: 5
+                }).setView([10.7, 122.9], 9);  // Adjusted center and zoom level
+                
+                // Add dark tile layer with caching
+                var tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                    subdomains: 'abcd',
+                    maxZoom: 19,
+                    crossOrigin: true,
+                    updateWhenIdle: true,  // Only update tiles when map is idle
+                    updateWhenZooming: false,  // Don't update tiles during zoom
+                    keepBuffer: 2  // Keep 2 zoom levels of tiles in buffer
+                }).addTo(map);
+                
+                // Store markers for filtering
+                window.markers = [];
+                window.markersLayer = L.layerGroup().addTo(map);
+                window.lastMoveTime = 0;
+                
+                // Function to add crab data markers with clustering (only one per location, most recent year)
+                function addCrabMarkers(data) {
+                    if (window.markerClusterGroup) {
+                        window.markerClusterGroup.clearLayers();
+                    }
+                    window.markers = [];
+                    if (!data || data.length === 0) {
+                        console.log('No data to display');
+                        return;
+                    }
+                    if (!window.markerClusterGroup) {
+                        window.markerClusterGroup = L.markerClusterGroup({
+                            maxClusterRadius: 50,
+                            spiderfyOnMaxZoom: true,
+                            showCoverageOnHover: false,
+                            zoomToBoundsOnClick: true,
+                            disableClusteringAtZoom: 15,
+                            chunkedLoading: true,
+                            chunkInterval: 200,
+                            chunkDelay: 50
+                        });
+                        window.markersLayer.addLayer(window.markerClusterGroup);
+                    }
+                    var bounds = L.latLngBounds([]);
+                    data.forEach(function(item) {
+                        var color = '#3498db';
+                        if (item.population < 100) {
+                            color = '#3498db';
+                        } else if (item.population <= 500) {
+                            color = '#2ecc71';
+                        } else {
+                            color = '#e74c3c';
+                        }
+                        var marker = L.circleMarker([item.latitude, item.longitude], {
+                            radius: Math.max(5, Math.min(15, item.population / 50)),
+                            fillColor: color,
+                            color: color,
+                            weight: 0,
+                            opacity: 1,
+                            fillOpacity: 0.8
+                        });
+                        var popupContent = `
+                            <div class="custom-popup">
+                                <div class="popup-title">Blue Crab Population Data</div>
+                                <div class="popup-content">
+                                    <div class="popup-stat">
+                                        <span class="stat-label">Coordinates:</span>
+                                        <span class="stat-value">${item.latitude.toFixed(4)}, ${item.longitude.toFixed(4)}</span>
+                                    </div>
+                                    <div class="popup-stat">
+                                        <span class="stat-label">Year:</span>
+                                        <span class="stat-value">${item.date_year}</span>
+                                    </div>
+                                    <div class="popup-stat">
+                                        <span class="stat-label">Male Count:</span>
+                                        <span class="stat-value male-count">${item.male_counts}</span>
+                                    </div>
+                                    <div class="popup-stat">
+                                        <span class="stat-label">Female Count:</span>
+                                        <span class="stat-value female-count">${item.female_counts}</span>
+                                    </div>
+                                    <div class="popup-stat">
+                                        <span class="stat-label">Total Population:</span>
+                                        <span class="stat-value total-count">${item.population}</span>
+                                    </div>
+                                    <div class="popup-stat">
+                                        <span class="stat-label">Observer:</span>
+                                        <span class="stat-value">${item.observer_name || 'Unknown'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        marker.bindPopup(popupContent);
+                        marker.crabData = item;
+                        window.markers.push(marker);
+                        window.markerClusterGroup.addLayer(marker);
+                        bounds.extend([item.latitude, item.longitude]);
+                    });
+                    // Always fit map to show all markers with padding
+                    if (bounds.isValid()) {
+                        map.fitBounds(bounds, {
+                            padding: [50, 50],
+                            maxZoom: 12
+                        });
+                    }
+                }
+                
+                // Helper function to get month name
+                function getMonthName(month) {
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    return months[month - 1] || 'Unknown';
+                }
+                
+                // Function to filter markers
+                function filterMarkers(filterType) {
+                    if (!window.markerClusterGroup) return;
+                    
+                    window.markerClusterGroup.clearLayers();
+                    
+                    window.markers.forEach(function(marker) {
+                        var show = true;
+                        var population = marker.crabData.population;
+                        
+                        switch(filterType) {
+                            case 1: // Low (<100)
+                                show = population < 100;
+                                break;
+                            case 2: // Medium (100-500)
+                                show = population >= 100 && population <= 500;
+                                break;
+                            case 3: // High (>500)
+                                show = population > 500;
+                                break;
+                            default: // All
+                                show = true;
+                        }
+                        
+                        if (show) {
+                            window.markerClusterGroup.addLayer(marker);
+                        }
+                    });
+                }
+                
+                // Function to update analytics display
+                function updateAnalytics(analytics) {
+                    // This function can be called from Python to update analytics
+                    console.log('Analytics updated:', analytics);
+                }
+                
+                // Function to filter markers by year (show all records for that year)
+                function filterMarkersByYear(year) {
+                    if (!window.markerClusterGroup) return;
+                    window.markerClusterGroup.clearLayers();
+                    window.markers.forEach(function(marker) {
+                        var show = true;
+                        if (year !== null && year !== undefined) {
+                            show = marker.crabData.date_year == year;
+                        }
+                        if (show) {
+                            window.markerClusterGroup.addLayer(marker);
+                        }
+                    });
+                }
+                
+                // Make functions available globally
+                window.addCrabMarkers = addCrabMarkers;
+                window.filterMarkers = filterMarkers;
+                window.updateAnalytics = updateAnalytics;
+            </script>
+        </body>
+        </html>
+        

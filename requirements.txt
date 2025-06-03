@@ -1,0 +1,13 @@
+# Required dependencies
+PyQt5
+qtawesome
+PyQtWebEngine
+pandas
+matplotlib
+seaborn
+folium
+branca
+numpy
+pillow
+pyqtdarktheme
+PyQtChart

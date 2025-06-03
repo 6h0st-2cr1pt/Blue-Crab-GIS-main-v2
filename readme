@@ -1,0 +1,61 @@
+# Blue Crab GIS
+
+A Geographic Information System for Blue Crab population monitoring using PyQt5, OpenStreetMap, and Leaflet.js.
+
+## Features
+
+- Interactive GIS map with dark mode and population visualization
+- Data upload via CSV or manual entry
+- Population analytics with charts and heatmaps
+- SQLite database integration
+- Customizable settings
+- Optimized for performance on low-spec laptops
+
+## Installation
+
+1. Clone this repository
+2. Install dependencies:
+   \`\`\`
+   pip install -r requirements.txt
+   \`\`\`
+3. Run the application:
+   \`\`\`
+   python main.py
+   \`\`\`
+
+## Project Structure
+
+- `main.py` - Application entry point
+- `src/` - Source code directory
+  - `splash_screen.py` - Splash screen implementation
+  - `main_window.py` - Main application window
+  - `sidebar.py` - Sidebar navigation
+  - `gis_map.py` - GIS map implementation
+  - `analytics.py` - Data analytics and visualization
+  - `datasets.py` - Dataset management
+  - `upload_data.py` - Data upload functionality
+  - `settings.py` - Application settings
+  - `about.py` - About information
+  - `utils/` - Utility modules
+    - `database.py` - Database management
+    - `notification.py` - Notification system
+    - `map_controls.py` - Map control widgets
+- `assets/` - Application assets
+  - `icons/` - Application icons
+  - `map/` - Map-related files
+- `data/` - Data directory for SQLite database
+
+## Performance Optimization
+
+The application implements several optimizations for low-spec laptops:
+
+1. Hardware acceleration for QWebEngineView
+2. Local tile caching for Negros Island region
+3. Loading map from file instead of injecting HTML
+4. Reduced Leaflet map load with frontend optimizations
+5. Vector tiles option for better performance
+6. Developer tools disabled in production
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

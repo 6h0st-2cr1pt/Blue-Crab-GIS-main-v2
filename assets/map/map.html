@@ -1,0 +1,343 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>Blue Crab GIS</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+            <link rel="stylesheet" href="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.css" />
+            <style>
+                html, body { 
+                    margin: 0; 
+                    padding: 0; 
+                    height: 100%; 
+                    width: 100%; 
+                    overflow: hidden;
+                }
+                #map { 
+                    position: absolute; 
+                    top: 0; 
+                    bottom: 0; 
+                    width: 100%; 
+                    height: 100%; 
+                }
+                .leaflet-popup-content-wrapper {
+                    background: rgba(255, 255, 255, 0.95);
+                    color: black;
+                    border-radius: 15px;
+                    backdrop-filter: blur(10px);
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+                }
+                .leaflet-popup-tip {
+                    background: rgba(255, 255, 255, 0.95);
+                }
+                .crab-popup {
+                    min-width: 250px;
+                }
+                .crab-popup h3 {
+                    margin: 0 0 10px 0;
+                    color: #2E86C1;
+                    border-bottom: 2px solid #2E86C1;
+                    padding-bottom: 5px;
+                }
+                .crab-popup .info-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 8px;
+                    margin: 10px 0;
+                }
+                .crab-popup .info-item {
+                    background: rgba(59, 130, 246, 0.1);
+                    padding: 5px 8px;
+                    border-radius: 5px;
+                    border-left: 3px solid #3b82f6;
+                }
+                .crab-popup .info-label {
+                    font-weight: bold;
+                    color: #1e40af;
+                    font-size: 11px;
+                }
+                .crab-popup .info-value {
+                    color: #1f2937;
+                    font-size: 13px;
+                }
+                .leaflet-control {
+                    border-radius: 10px !important;
+                }
+            </style>
+        </head>
+        <body>
+            <div id="map"></div>
+            <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+            <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+            <script>
+                // Initialize the map
+                var map = L.map('map', {
+                    zoomControl: false
+                }).setView([10.0, 123.0], 8);
+                
+                // Add base tile layer
+                var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors',
+                    maxZoom: 19
+                }).addTo(map);
+                
+                // Store all data and layers
+                var allData = [{"id": "1f911f5a", "date_month": 1, "date_year": 2025, "male_counts": 100, "female_counts": 100, "population": 200, "observer_id": "a4645223", "observer_name": "Jonald", "observer_email": "", "observer_organization": "", "location_id": "50776712", "latitude": 10.763371, "longitude": 122.987059, "location_name": "", "region": "", "created_at": "2025-05-25 03:03:38"}];
+                var markers = [];
+                var heatmapLayer = null;
+                var currentFilters = {
+                    sex: 'all',
+                    age: 'all',
+                    month: 'all',
+                    year: 'all',
+                    density: 'all'
+                };
+                
+                // Define marker colors and sizes based on population
+                function getMarkerStyle(data) {
+                    var population = data.population;
+                    var color, radius;
+                    
+                    if (population < 100) {
+                        color = '#3498DB';
+                        radius = 8;
+                    } else if (population < 500) {
+                        color = '#2E86C1';
+                        radius = 10;
+                    } else {
+                        color = '#1B4F72';
+                        radius = 12;
+                    }
+                    
+                    return { color: color, radius: radius };
+                }
+                
+                // Create popup content
+                function createPopupContent(data) {
+                    var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    
+                    return `
+                        <div class="crab-popup">
+                            <h3>🦀 Blue Crab Population</h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">ID</div>
+                                    <div class="info-value">${data.id}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Date</div>
+                                    <div class="info-value">${monthNames[data.date_month-1]} ${data.date_year}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Total Population</div>
+                                    <div class="info-value">${data.population}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Juveniles</div>
+                                    <div class="info-value">${data.juvenile_counts}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Adults</div>
+                                    <div class="info-value">${data.adult_counts}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Males</div>
+                                    <div class="info-value">${data.male_counts}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Females</div>
+                                    <div class="info-value">${data.female_counts}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Observer</div>
+                                    <div class="info-value">${data.observer_name || 'Unknown'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Location</div>
+                                    <div class="info-value">${data.location_name || 'Unnamed'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Region</div>
+                                    <div class="info-value">${data.region || 'Unknown'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Coordinates</div>
+                                    <div class="info-value">${data.latitude.toFixed(4)}, ${data.longitude.toFixed(4)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Add markers to map
+                function addMarkers(data) {
+                    clearMarkers();
+                    
+                    data.forEach(function(item) {
+                        var style = getMarkerStyle(item);
+                        
+                        var marker = L.circleMarker([item.latitude, item.longitude], {
+                            radius: style.radius,
+                            fillColor: style.color,
+                            color: style.color,  // Same color as fill for solid appearance
+                            weight: 0,           // No border
+                            opacity: 1,
+                            fillOpacity: 1,      // Fully opaque for solid dots
+                            data: item
+                        });
+                        
+                        marker.bindPopup(createPopupContent(item));
+                        marker.addTo(map);
+                        markers.push(marker);
+                    });
+                }
+                
+                // Clear all markers
+                function clearMarkers() {
+                    markers.forEach(function(marker) {
+                        map.removeLayer(marker);
+                    });
+                    markers = [];
+                }
+                
+                // Create heatmap
+                function createHeatmap(data) {
+                    if (heatmapLayer) {
+                        map.removeLayer(heatmapLayer);
+                    }
+                    
+                    var heatData = data.map(function(item) {
+                        return [item.latitude, item.longitude, item.population / 100];
+                    });
+                    
+                    heatmapLayer = L.heatLayer(heatData, {
+                        radius: 25,
+                        blur: 15,
+                        maxZoom: 17,
+                        gradient: {
+                            0.0: '#3498DB',
+                            0.5: '#2E86C1',
+                            1.0: '#1B4F72'
+                        }
+                    }).addTo(map);
+                }
+                
+                // Filter data based on current filters
+                function filterData() {
+                    var filtered = allData.filter(function(item) {
+                        // Sex filter
+                        if (currentFilters.sex !== 'all') {
+                            if (currentFilters.sex === 'male' && item.male_counts === 0) return false;
+                            if (currentFilters.sex === 'female' && item.female_counts === 0) return false;
+                            if (currentFilters.sex === 'mixed' && (item.male_counts === 0 || item.female_counts === 0)) return false;
+                        }
+                        
+                        // Age filter
+                        if (currentFilters.age !== 'all') {
+                            if (currentFilters.age === 'juvenile' && item.juvenile_counts === 0) return false;
+                            if (currentFilters.age === 'adult' && item.adult_counts === 0) return false;
+                            if (currentFilters.age === 'mixed' && (item.juvenile_counts === 0 || item.adult_counts === 0)) return false;
+                        }
+                        
+                        // Month filter
+                        if (currentFilters.month !== 'all' && item.date_month !== parseInt(currentFilters.month)) {
+                            return false;
+                        }
+                        
+                        // Year filter
+                        if (currentFilters.year !== 'all' && item.date_year !== parseInt(currentFilters.year)) {
+                            return false;
+                        }
+                        
+                        // Density filter
+                        if (currentFilters.density !== 'all') {
+                            if (currentFilters.density === 'low' && item.population >= 100) return false;
+                            if (currentFilters.density === 'medium' && (item.population < 100 || item.population > 500)) return false;
+                            if (currentFilters.density === 'high' && item.population <= 500) return false;
+                        }
+                        
+                        return true;
+                    });
+                    
+                    return filtered;
+                }
+                
+                // Update map display
+                function updateMap() {
+                    var filteredData = filterData();
+                    addMarkers(filteredData);
+                    
+                    // Update analytics
+                    window.updateAnalytics && window.updateAnalytics(filteredData);
+                }
+                
+                // Toggle heatmap
+                window.toggleHeatmap = function() {
+                    var filteredData = filterData();
+                    
+                    if (heatmapLayer && map.hasLayer(heatmapLayer)) {
+                        map.removeLayer(heatmapLayer);
+                        addMarkers(filteredData);
+                    } else {
+                        clearMarkers();
+                        createHeatmap(filteredData);
+                    }
+                };
+                
+                // Filter functions
+                window.filterBySex = function(sex) {
+                    currentFilters.sex = sex;
+                    updateMap();
+                };
+                
+                window.filterByAge = function(age) {
+                    currentFilters.age = age;
+                    updateMap();
+                };
+                
+                window.filterByMonth = function(month) {
+                    currentFilters.month = month;
+                    updateMap();
+                };
+                
+                window.filterByYear = function(year) {
+                    currentFilters.year = year;
+                    updateMap();
+                };
+                
+                window.filterByDensity = function(density) {
+                    currentFilters.density = density;
+                    updateMap();
+                };
+                
+                // Search location
+                window.searchLocation = function(query) {
+                    fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + query)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data && data.length > 0) {
+                                const lat = parseFloat(data[0].lat);
+                                const lon = parseFloat(data[0].lon);
+                                map.setView([lat, lon], 12);
+                            } else {
+                                alert('Location not found');
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                };
+                
+                // Initialize map
+                updateMap();
+                
+                // Add scale control
+                L.control.scale({
+                    imperial: false,
+                    position: 'bottomleft'
+                }).addTo(map);
+            </script>
+        </body>
+        </html>
+        
