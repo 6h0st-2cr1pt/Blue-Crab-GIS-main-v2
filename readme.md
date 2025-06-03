@@ -1,40 +1,74 @@
-Blue Crab GIS
+# Blue Crab GIS
 
 A Geographic Information System for Blue Crab population monitoring using PyQt5, OpenStreetMap, and Leaflet.js.
 
-Features
+## Overview
 
-- Interactive GIS map with dark mode and population visualization
-- Data upload via CSV or manual entry
-- Population analytics with charts and heatmaps
-- SQLite database integration
+Blue Crab GIS is a desktop application designed for monitoring and analyzing blue crab populations in the Negros Island region. It provides an intuitive interface for data visualization, analysis, and management.
+
+## Key Features
+
+### Interactive GIS Map
+- Dark mode interface with customizable map layers
+- Real-time population density visualization
+- Location search functionality
+- Interactive markers with detailed information
+- Customizable map controls and filters
+
+### Data Management
+- CSV file import with drag-and-drop support
+- Manual data entry form
+- SQLite database for reliable data storage
+- Data validation and error handling
+- Export functionality for reports
+
+### Analytics Dashboard
+- Population distribution charts
+- Density heatmaps
+- Year-over-year comparisons
+- Sex ratio analysis
+- Regional statistics
+
+### User Interface
+- Modern glass-effect design
+- Responsive layout
 - Customizable settings
-- Optimized for performance on low-spec laptops
+- Dark theme for reduced eye strain
+- Intuitive navigation
 
-Installation
+## Installation
 
-1. Clone this repository
+### Prerequisites
+- Python 3.8 or higher
+- pip (Python package manager)
+- Git
+
+### Steps
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/Blue-Crab-GIS.git
+   cd Blue-Crab-GIS
+   ```
 
 2. Install dependencies:
+   ```bash
    pip install -r requirements.txt
+   ```
 
 3. Run the application:
+   ```bash
    python main.py
+   ```
 
-Blue Crab GIS Project Structure
-=============================
+## Project Structure
 
-Root Directory
--------------
+```
+Blue Crab GIS/
 ├── LICENSE                     # MIT License file
 ├── main.py                    # Main application entry point
 ├── run_erd.py                 # ERD (Entity Relationship Diagram) runner
 ├── requirements.txt           # Python package dependencies
 ├── readme                     # Project documentation
-├── FOLDER_STRUCTURE.txt       # This file - project structure documentation
-
-├── .git/                      # Git version control directory
-│   └── ...                    # Git configuration files
 
 ├── assets/                    # Static assets directory
 │   └── map/                   # Map-related assets
@@ -62,14 +96,9 @@ Root Directory
         ├── database.py       # Database management
         ├── map_controls.py   # Map control widgets
         └── glass_controls.py # Glass-effect UI controls
+```
 
-Notes:
-- The project follows a modular structure with clear separation of concerns
-- Source code is organized in the src/ directory with utility modules in src/utils/
-- Static assets and data are stored in separate directories
-- Configuration and documentation files are in the root directory 
-
-Performance Optimization
+## Performance Optimization
 
 The application implements several optimizations for low-spec laptops:
 
@@ -80,6 +109,21 @@ The application implements several optimizations for low-spec laptops:
 5. Vector tiles option for better performance
 6. Developer tools disabled in production
 
-License
+## Contributing
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- OpenStreetMap for map data
+- Leaflet.js for interactive maps
+- PyQt5 for the desktop interface
+- SQLite for database management
