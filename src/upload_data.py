@@ -433,11 +433,13 @@ class UploadDataWidget(QWidget):
         
         self.latitude_input = QLineEdit()
         self.latitude_input.setStyleSheet(input_style)
+        self.latitude_input.textChanged.connect(self.validate_coordinates)
         latitude_label = QLabel("Latitude:")
         latitude_label.setStyleSheet(label_style)
         
         self.longitude_input = QLineEdit()
         self.longitude_input.setStyleSheet(input_style)
+        self.longitude_input.textChanged.connect(self.validate_coordinates)
         longitude_label = QLabel("Longitude:")
         longitude_label.setStyleSheet(label_style)
         
@@ -782,3 +784,23 @@ class UploadDataWidget(QWidget):
         # Only update if the text has changed
         if filtered_text != text:
             self.observer_input.setText(filtered_text)
+
+    def validate_coordinates(self):
+        """Validate and format coordinate inputs to only contain numbers and decimal points"""
+        # Get the sender (which input field triggered the validation)
+        sender = self.sender()
+        if not sender:
+            return
+            
+        text = sender.text()
+        # Remove any non-numeric characters except decimal point
+        filtered_text = ''.join(c for c in text if c.isdigit() or c == '.')
+        
+        # Ensure only one decimal point
+        if filtered_text.count('.') > 1:
+            parts = filtered_text.split('.')
+            filtered_text = parts[0] + '.' + ''.join(parts[1:])
+            
+        # Only update if the text has changed
+        if filtered_text != text:
+            sender.setText(filtered_text)
